@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Emojis for Google Meet",
+  "version": "1.0",
+  "description": "Adds emoji picker to Google Meet chat input",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["emoji-picker.html"],
+      "matches": ["https://meet.google.com/*"]
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
