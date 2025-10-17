@@ -30,7 +30,6 @@
 /* Scrollbar styling */
 .google-meet-emoji-picker ::-webkit-scrollbar {
   width: 8px;
-  height: 8px;
 }
 
 .google-meet-emoji-picker ::-webkit-scrollbar-track {
@@ -72,11 +71,23 @@ div[aria-label="Type a message"] {
 }
 
 .google-meet-emoji-picker > div > div:first-child {
-  flex-shrink: 0;
-}
-
-.google-meet-emoji-picker > div > div:last-child {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/* Section headers */
+.google-meet-emoji-picker [style*="font-weight: 600"] {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 4px !important;
+}
+
+/* Smooth scrolling */
+.google-meet-emoji-picker > div > div:first-child {
+  scroll-behavior: smooth;
+}
+
+/* Better section spacing */
+.google-meet-emoji-picker [style*="margin-bottom: 16px"]:last-child {
+  margin-bottom: 8px !important;
 }
