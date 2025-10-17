@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Emojis for Google Meet",
-    "version": "2.0",
+    "version": "2.1",
     "description": "Adds emoji picker to Google Meet chat input",
     "permissions": [
       "activeTab"

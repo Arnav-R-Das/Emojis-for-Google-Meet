@@ -11,6 +11,7 @@ class GoogleMeetEmojiPicker {
 
   init() {
     this.waitForChatInput();
+    this.setupKeyboardShortcut();
   }
 
   waitForChatInput() {
@@ -36,6 +37,35 @@ class GoogleMeetEmojiPicker {
       }
       checkForChat();
     }, 2000);
+  }
+
+  setupKeyboardShortcut() {
+    document.addEventListener('keydown', (e) => {
+      // Check for Ctrl+Q (Windows/Linux) or Cmd+Q (Mac)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'q') {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const chatInput = this.findChatInput();
+        if (chatInput) {
+          this.toggleEmojiPicker(chatInput);
+        }
+      }
+      
+      // Close picker with Escape
+      if (e.key === 'Escape' && this.isPickerVisible) {
+        this.hideEmojiPicker();
+      }
+    });
+  }
+
+  findChatInput() {
+    // Look for the specific Google Meet chat input
+    const chatInput = document.querySelector('[aria-label="Send a message"], [aria-label="Type a message"]');
+    if (chatInput && this.isVisible(chatInput)) {
+      return chatInput;
+    }
+    return null;
   }
 
   findChatContainer() {
@@ -66,6 +96,10 @@ class GoogleMeetEmojiPicker {
     return chatInput.parentElement;
   }
 
+  isVisible(element) {
+    return element.offsetWidth > 0 && element.offsetHeight > 0 && element.style.display !== 'none';
+  }
+
   createEmojiButton(chatContainer) {
     // Remove any existing buttons first
     this.removeExistingButtons();
@@ -75,7 +109,7 @@ class GoogleMeetEmojiPicker {
     this.emojiButton.innerHTML = '😊';
     this.emojiButton.className = 'google-meet-emoji-button';
     this.emojiButton.type = 'button';
-    this.emojiButton.title = 'Insert emoji';
+    this.emojiButton.title = 'Insert emoji (Ctrl+Q)';
     
     // Style the button to match Google Meet's design
     Object.assign(this.emojiButton.style, {
@@ -195,15 +229,12 @@ class GoogleMeetEmojiPicker {
     this.emojiPicker.appendChild(pickerContent);
     document.body.appendChild(this.emojiPicker);
 
-    // Close picker when clicking outside
+    // Close picker when clicking outside (but not when clicking emojis)
     document.addEventListener('click', (e) => {
-      if (this.isPickerVisible && !this.emojiPicker.contains(e.target) && e.target !== this.emojiButton) {
-        this.hideEmojiPicker();
-      }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.isPickerVisible) {
+      if (this.isPickerVisible && 
+          !this.emojiPicker.contains(e.target) && 
+          e.target !== this.emojiButton &&
+          !e.target.closest('.google-meet-emoji-picker')) {
         this.hideEmojiPicker();
       }
     });
@@ -262,8 +293,10 @@ class GoogleMeetEmojiPicker {
           emojiButton.style.transform = 'scale(1)';
         });
 
-        emojiButton.addEventListener('click', () => {
+        emojiButton.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent event from bubbling up
           this.insertEmoji(emoji);
+          // Don't hide the picker - keep it open for multiple selections
         });
 
         sectionGrid.appendChild(emojiButton);
@@ -299,6 +332,11 @@ class GoogleMeetEmojiPicker {
 
     // Adjust if picker goes above viewport
     this.adjustPickerPosition();
+
+    // Focus the input so user can continue typing
+    if (this.currentInput) {
+      this.currentInput.focus();
+    }
   }
 
   adjustPickerPosition() {
@@ -354,7 +392,10 @@ class GoogleMeetEmojiPicker {
       this.currentInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    this.hideEmojiPicker();
+    // Don't hide the picker - keep it open for multiple selections
+    // this.hideEmojiPicker();
+    
+    // Keep focus on the input so user can continue typing or selecting more emojis
     this.currentInput.focus();
   }
 }
