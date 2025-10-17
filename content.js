@@ -185,10 +185,9 @@ class GoogleMeetEmojiPicker {
       border: 1px solid #ddd;
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-      padding: 12px;
       z-index: 10000;
-      width: 320px;
-      height: 400px;
+      width: 340px;
+      height: 380px;
       display: none;
       font-family: 'Segoe UI', system-ui, sans-serif;
       overflow: hidden;
@@ -211,6 +210,8 @@ class GoogleMeetEmojiPicker {
       flex-direction: column;
       height: 100%;
       overflow: hidden;
+      padding: 12px;
+      box-sizing: border-box;
     `;
 
     // Create emoji grid container with vertical scroll
@@ -219,6 +220,7 @@ class GoogleMeetEmojiPicker {
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
+      padding-right: 4px;
     `;
 
     // Create all emoji sections
@@ -264,7 +266,7 @@ class GoogleMeetEmojiPicker {
       sectionGrid.style.cssText = `
         display: grid;
         grid-template-columns: repeat(8, 1fr);
-        gap: 6px;
+        gap: 4px;
         margin-bottom: 16px;
         padding: 0 4px;
       `;
@@ -278,9 +280,14 @@ class GoogleMeetEmojiPicker {
           border: none;
           font-size: 22px;
           cursor: pointer;
-          padding: 6px;
+          padding: 4px;
           border-radius: 6px;
           transition: all 0.2s ease;
+          min-width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         `;
 
         emojiButton.addEventListener('mouseenter', () => {
@@ -321,16 +328,34 @@ class GoogleMeetEmojiPicker {
     if (!this.emojiPicker || !this.emojiButton) return;
 
     const buttonRect = this.emojiButton.getBoundingClientRect();
-    const pickerHeight = 320;
+    const pickerHeight = 380;
+    const viewportHeight = window.innerHeight;
     
-    // Position above the button
+    // Calculate available space above and below the button
+    const spaceAbove = buttonRect.top;
+    const spaceBelow = viewportHeight - buttonRect.bottom;
+    
+    let topPosition;
+    
+    // Prefer positioning above the button if there's enough space
+    if (spaceAbove > pickerHeight || spaceAbove > spaceBelow) {
+      // Position above the button
+      topPosition = buttonRect.top + window.scrollY - pickerHeight - 10;
+    } else {
+      // Position below the button
+      topPosition = buttonRect.bottom + window.scrollY + 10;
+    }
+    
+    // Ensure picker doesn't go off-screen
+    topPosition = Math.max(10, Math.min(topPosition, viewportHeight + window.scrollY - pickerHeight - 10));
+    
     this.emojiPicker.style.display = 'block';
-    this.emojiPicker.style.top = `${buttonRect.top + window.scrollY - pickerHeight - 10}px`;
+    this.emojiPicker.style.top = `${topPosition}px`;
     this.emojiPicker.style.left = `${buttonRect.left + window.scrollX}px`;
     
     this.isPickerVisible = true;
 
-    // Adjust if picker goes above viewport
+    // Adjust if picker goes beyond right edge of viewport
     this.adjustPickerPosition();
 
     // Focus the input so user can continue typing
@@ -344,13 +369,14 @@ class GoogleMeetEmojiPicker {
 
     const pickerRect = this.emojiPicker.getBoundingClientRect();
 
-    if (pickerRect.top < 10) {
-      const buttonRect = this.emojiButton.getBoundingClientRect();
-      this.emojiPicker.style.top = `${buttonRect.bottom + window.scrollY + 10}px`;
-    }
-
+    // If picker goes beyond right edge of viewport, adjust left position
     if (pickerRect.right > window.innerWidth - 10) {
       this.emojiPicker.style.left = `${window.innerWidth - pickerRect.width - 10}px`;
+    }
+    
+    // If picker goes beyond left edge of viewport, adjust left position
+    if (pickerRect.left < 10) {
+      this.emojiPicker.style.left = '10px';
     }
   }
 
