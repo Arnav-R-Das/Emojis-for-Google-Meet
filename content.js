@@ -5,6 +5,7 @@ class GoogleMeetEmojiPicker {
     this.isPickerVisible = false;
     this.currentInput = null;
     this.initialized = false;
+    this.sectionElements = new Map();
     
     this.init();
   }
@@ -214,8 +215,12 @@ class GoogleMeetEmojiPicker {
       box-sizing: border-box;
     `;
 
+    // Create category navigation header
+    const categoryHeader = this.createCategoryHeader(emojiSections);
+    
     // Create emoji grid container with vertical scroll
     const emojiGridContainer = document.createElement('div');
+    emojiGridContainer.className = 'emoji-grid-container';
     emojiGridContainer.style.cssText = `
       flex: 1;
       overflow-y: auto;
@@ -227,6 +232,7 @@ class GoogleMeetEmojiPicker {
     this.createAllEmojiSections(emojiSections, emojiGridContainer);
 
     // Assemble the picker
+    pickerContent.appendChild(categoryHeader);
     pickerContent.appendChild(emojiGridContainer);
     this.emojiPicker.appendChild(pickerContent);
     document.body.appendChild(this.emojiPicker);
@@ -242,10 +248,84 @@ class GoogleMeetEmojiPicker {
     });
   }
 
-  createAllEmojiSections(emojiSections, container) {
-    container.innerHTML = '';
+  createCategoryHeader(emojiSections) {
+    const categoryHeader = document.createElement('div');
+    categoryHeader.style.cssText = `
+      display: flex;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      gap: 4px;
+      flex-shrink: 0;
+    `;
+
+    const categoryIcons = {
+      'Smileys & People': '😀',
+      'Animals & Nature': '🐶',
+      'Food & Drink': '🍎',
+      'Activities & Sports': '⚽',
+      'Travel & Places': '🚗',
+      'Objects & Symbols': '❤️'
+    };
 
     Object.keys(emojiSections).forEach(sectionName => {
+      const categoryButton = document.createElement('button');
+      categoryButton.textContent = categoryIcons[sectionName];
+      categoryButton.title = sectionName;
+      categoryButton.dataset.section = sectionName;
+      categoryButton.style.cssText = `
+        background: none;
+        border: none;
+        padding: 6px 8px;
+        cursor: pointer;
+        font-size: 18px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        flex: 1;
+      `;
+
+      categoryButton.addEventListener('mouseenter', () => {
+        categoryButton.style.backgroundColor = '#f0f0f0';
+      });
+
+      categoryButton.addEventListener('mouseleave', () => {
+        categoryButton.style.backgroundColor = 'transparent';
+      });
+
+      categoryButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.scrollToSection(sectionName);
+      });
+
+      categoryHeader.appendChild(categoryButton);
+    });
+
+    return categoryHeader;
+  }
+
+  scrollToSection(sectionName) {
+    const sectionElement = this.sectionElements.get(sectionName);
+    if (sectionElement) {
+      const container = this.emojiPicker.querySelector('.emoji-grid-container');
+      const headerOffset = 60; // Account for category header height
+      
+      container.scrollTo({
+        top: sectionElement.offsetTop - headerOffset,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  createAllEmojiSections(emojiSections, container) {
+    container.innerHTML = '';
+    this.sectionElements.clear();
+
+    Object.keys(emojiSections).forEach(sectionName => {
+      // Create section wrapper
+      const sectionWrapper = document.createElement('div');
+      sectionWrapper.className = 'emoji-section';
+      sectionWrapper.dataset.section = sectionName;
+
       // Create section header
       const sectionHeader = document.createElement('div');
       sectionHeader.textContent = sectionName;
@@ -301,16 +381,19 @@ class GoogleMeetEmojiPicker {
         });
 
         emojiButton.addEventListener('click', (e) => {
-          e.stopPropagation(); // Prevent event from bubbling up
+          e.stopPropagation();
           this.insertEmoji(emoji);
-          // Don't hide the picker - keep it open for multiple selections
         });
 
         sectionGrid.appendChild(emojiButton);
       });
 
-      container.appendChild(sectionHeader);
-      container.appendChild(sectionGrid);
+      sectionWrapper.appendChild(sectionHeader);
+      sectionWrapper.appendChild(sectionGrid);
+      container.appendChild(sectionWrapper);
+      
+      // Store reference for scrolling
+      this.sectionElements.set(sectionName, sectionWrapper);
     });
   }
 
@@ -418,9 +501,6 @@ class GoogleMeetEmojiPicker {
       this.currentInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    // Don't hide the picker - keep it open for multiple selections
-    // this.hideEmojiPicker();
-    
     // Keep focus on the input so user can continue typing or selecting more emojis
     this.currentInput.focus();
   }

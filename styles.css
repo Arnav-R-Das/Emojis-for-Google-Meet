@@ -75,10 +75,36 @@ div[aria-label="Type a message"] {
 }
 
 .google-meet-emoji-picker > div > div:first-child {
+  flex-shrink: 0;
+}
+
+.google-meet-emoji-picker > div > div:last-child {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 4px;
+}
+
+/* Category header styling */
+.google-meet-emoji-picker > div > div:first-child {
+  border-bottom: 1px solid #eee;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+}
+
+.google-meet-emoji-picker > div > div:first-child button {
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.google-meet-emoji-picker > div > div:first-child button:hover {
+  background-color: #f0f0f0;
 }
 
 /* Section headers */
@@ -88,7 +114,7 @@ div[aria-label="Type a message"] {
 }
 
 /* Smooth scrolling */
-.google-meet-emoji-picker > div > div:first-child {
+.emoji-grid-container {
   scroll-behavior: smooth;
 }
 
